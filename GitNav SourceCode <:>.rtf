@@ -1,0 +1,134 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red193\green193\blue193;}
+{\*\expandedcolortbl;;\cssrgb\c80000\c80000\c80000;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 import sys\
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QLineEdit, QMenuBar, QMenu, QAction, QWidget, QInputDialog, QPushButton, QTabWidget\
+from PyQt5.QtWebEngineWidgets import QWebEngineView\
+from PyQt5.QtCore import QUrl\
+\
+class TabNavegador(QWidget):\
+    def __init__(self):\
+        super().__init__()\
+\
+        # Crear un navegador web\
+        self.browser = QWebEngineView()\
+        self.browser.setUrl(QUrl("https://www.google.com"))\
+\
+        # Crear la barra de direcciones\
+        self.url_bar = QLineEdit()\
+        self.url_bar.returnPressed.connect(self.navigate_to_url)\
+\
+        # Crear botones de navegaci\'f3n\
+        back_button = QPushButton("\uc0\u8592 ")\
+        forward_button = QPushButton("\uc0\u8594 ")\
+        reload_button = QPushButton("Reload")\
+        open_button = QPushButton("Open URL")\
+\
+        # Cambiar tama\'f1o de los botones\
+        back_button.setFixedSize(50, 40)\
+        forward_button.setFixedSize(50, 40)\
+        reload_button.setFixedSize(80, 40)\
+        open_button.setFixedSize(80, 40)\
+\
+        # Conectar los botones a las funciones correspondientes\
+        back_button.clicked.connect(self.browser.back)\
+        forward_button.clicked.connect(self.browser.forward)\
+        reload_button.clicked.connect(self.browser.reload)\
+        open_button.clicked.connect(self.open_url_dialog)\
+\
+        # Crear un layout horizontal para los botones y la barra de direcciones\
+        nav_bar_layout = QHBoxLayout()\
+        nav_bar_layout.addWidget(back_button)\
+        nav_bar_layout.addWidget(forward_button)\
+        nav_bar_layout.addWidget(reload_button)\
+        nav_bar_layout.addWidget(open_button)\
+        nav_bar_layout.addWidget(self.url_bar)\
+\
+        # Crear un layout vertical para el navegador\
+        main_layout = QVBoxLayout()\
+        main_layout.addLayout(nav_bar_layout)\
+        main_layout.addWidget(self.browser)\
+\
+        # Establecer el layout principal\
+        self.setLayout(main_layout)\
+\
+        # Actualizar la barra de direcciones cuando cambie la URL\
+        self.browser.urlChanged.connect(self.update_url_bar)\
+\
+    def open_url_dialog(self):\
+        # Cuadro de di\'e1logo para abrir URL\
+        url, ok = QInputDialog.getText(self, 'Open URL', 'Introduce the URL:')\
+        if ok and url:\
+            if not url.startswith("http://") and not url.startswith("https://"):\
+                url = "https://" + url\
+            self.browser.setUrl(QUrl(url))\
+\
+    def navigate_to_url(self):\
+        # Navegar a la URL escrita en la barra de direcciones\
+        url = self.url_bar.text()\
+        if not url.startswith("http://") and not url.startswith("https://"):\
+            url = "https://" + url\
+        self.browser.setUrl(QUrl(url))\
+\
+    def update_url_bar(self, q):\
+        # Actualizar la barra de direcciones con la URL actual\
+        self.url_bar.setText(q.toString())\
+\
+class NavegadorPrincipal(QMainWindow):\
+    def __init__(self):\
+        super().__init__()\
+        self.setWindowTitle("GitNav")\
+        self.setGeometry(300, 100, 1000, 700)\
+\
+        # Crear un widget de pesta\'f1as\
+        self.tabs = QTabWidget()\
+        self.setCentralWidget(self.tabs)\
+\
+        # Crear la barra de men\'fa\
+        menubar = self.menuBar()\
+        file_menu = menubar.addMenu('Menu Bar')\
+\
+        # Acciones del men\'fa\
+        new_tab_action = QAction('New Tab', self)\
+        new_tab_action.triggered.connect(self.add_new_tab)\
+        close_tab_action = QAction('Close Tab', self)\
+        close_tab_action.triggered.connect(self.close_current_tab)\
+        exit_action = QAction('Quit', self)\
+        exit_action.triggered.connect(self.close)\
+\
+        # Agregar acciones al men\'fa\
+        file_menu.addAction(new_tab_action)\
+        file_menu.addAction(close_tab_action)\
+        file_menu.addAction(exit_action)\
+\
+        # Agregar una primera pesta\'f1a al abrir\
+        self.add_new_tab()\
+\
+    def add_new_tab(self, url="https://www.google.com"):\
+        # Crear una nueva pesta\'f1a con el navegador\
+        new_tab = TabNavegador()\
+        new_tab.browser.setUrl(QUrl(url))\
+\
+        # A\'f1adir la pesta\'f1a al widget de pesta\'f1as\
+        self.tabs.addTab(new_tab, "New Tab")\
+\
+        # Cambiar el foco a la nueva pesta\'f1a\
+        self.tabs.setCurrentWidget(new_tab)\
+\
+    def close_current_tab(self):\
+        # Cerrar la pesta\'f1a actual si hay m\'e1s de una abierta\
+        if self.tabs.count() > 1:\
+            self.tabs.removeTab(self.tabs.currentIndex())\
+\
+if __name__ == '__main__':\
+    app = QApplication(sys.argv)\
+    main_window = NavegadorPrincipal()\
+    main_window.show()\
+    sys.exit(app.exec_())\
+}
